@@ -1,6 +1,6 @@
 # Facade
 
-Hosting internal minecraft servers just for a bunch of friends who are not frequently online wastes a lot of resources: the vanilla open to a bunch of friends who are not frequently online (i.e., the server remains idle for most of the time). However, the vanilla / spigot / paper server implementations all suffer from moderate CPU usage when idling (20%-30% on my low-end homeserver), let alone consuming a decent amount of RAM. 
+Hosting internal minecraft servers just for a bunch of friends who are not frequently online wastes a lot of resources: the vanilla / spigot / paper server implementations all suffer from moderate CPU usage when idling (20%-30% on my low-end homeserver), let alone consuming a decent amount of RAM. 
 
 Facade aims to automatically shutdown (hibernate) the server when idle for a (configurable) fixed period of time, when a new player connects, it restarts the server and proxies all data to the server instance. 
 This process is transparent to the players: the server status is always open to the players, and friendly messages are shown throughout the process (i.e., MOTD, connection timeout while starting the server etc.) to indicate the server is in hibernation.
