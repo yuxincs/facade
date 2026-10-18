@@ -20,7 +20,7 @@ func TestDetect(t *testing.T) {
 		t.Run(filepath.Base(dir), func(t *testing.T) {
 			t.Parallel()
 
-			got, err := (palworld.Adapter{}).Detect(dir)
+			got, err := (&palworld.Adapter{}).Detect(dir)
 			require.NoError(t, err)
 			require.True(t, got)
 		})
@@ -39,7 +39,7 @@ func TestDetect(t *testing.T) {
 			require.NoError(t, os.Mkdir(config, 0o755))
 			ini := "\ufeff[/Script/Pal.PalGameWorldSettings]\r\nOptionSettings=(" + settings + ")\r\n"
 			require.NoError(t, os.WriteFile(filepath.Join(config, "PalWorldSettings.ini"), []byte(ini), 0o644))
-			got, err := (palworld.Adapter{}).Detect(dir)
+			got, err := (&palworld.Adapter{}).Detect(dir)
 			require.NoError(t, err)
 			require.True(t, got)
 		})
@@ -86,7 +86,7 @@ func TestDetectFalse(t *testing.T) {
 			if test.prepare != nil {
 				test.prepare(t, dir)
 			}
-			got, err := (palworld.Adapter{}).Detect(dir)
+			got, err := (&palworld.Adapter{}).Detect(dir)
 			require.NoError(t, err)
 			require.False(t, got)
 		})
@@ -101,7 +101,7 @@ func TestDetectError(t *testing.T) {
 			t.Parallel()
 			dir := t.TempDir()
 			require.NoError(t, os.WriteFile(filepath.Join(dir, launcher), nil, 0o644))
-			got, err := (palworld.Adapter{}).Detect(dir)
+			got, err := (&palworld.Adapter{}).Detect(dir)
 			require.False(t, got)
 			require.ErrorContains(t, err, "no active PalWorldSettings.ini")
 			require.ErrorContains(t, err, "RESTAPIEnabled=True")
@@ -140,7 +140,7 @@ func TestDetectError(t *testing.T) {
 			require.NoError(t, os.WriteFile(path, []byte(ini), 0o644))
 			// A launcher must not bypass validation of the active configuration.
 			require.NoError(t, os.WriteFile(filepath.Join(dir, "PalServer.sh"), nil, 0o644))
-			got, err := (palworld.Adapter{}).Detect(dir)
+			got, err := (&palworld.Adapter{}).Detect(dir)
 			require.False(t, got)
 			require.ErrorContains(t, err, test.wantErr)
 			require.ErrorContains(t, err, path)
@@ -156,14 +156,14 @@ func TestDetectError(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, os.Mkdir(filepath.Join(config, "WindowsServer"), 0o755))
 		require.NoError(t, os.WriteFile(filepath.Join(config, "WindowsServer", "PalWorldSettings.ini"), settings, 0o644))
-		got, err := (palworld.Adapter{}).Detect(dir)
+		got, err := (&palworld.Adapter{}).Detect(dir)
 		require.False(t, got)
 		require.ErrorContains(t, err, "multiple active settings files")
 	})
 
 	t.Run("missing directory", func(t *testing.T) {
 		t.Parallel()
-		got, err := (palworld.Adapter{}).Detect(filepath.Join(t.TempDir(), "missing"))
+		got, err := (&palworld.Adapter{}).Detect(filepath.Join(t.TempDir(), "missing"))
 		require.ErrorIs(t, err, fs.ErrNotExist)
 		require.False(t, got)
 	})
@@ -172,7 +172,7 @@ func TestDetectError(t *testing.T) {
 		t.Parallel()
 		path := filepath.Join(t.TempDir(), "file")
 		require.NoError(t, os.WriteFile(path, nil, 0o644))
-		got, err := (palworld.Adapter{}).Detect(path)
+		got, err := (&palworld.Adapter{}).Detect(path)
 		require.Error(t, err)
 		require.False(t, got)
 	})
@@ -188,7 +188,7 @@ func TestDetectError(t *testing.T) {
 		t.Cleanup(func() {
 			require.NoError(t, os.Chmod(locked, 0o755))
 		})
-		got, err := (palworld.Adapter{}).Detect(dir)
+		got, err := (&palworld.Adapter{}).Detect(dir)
 		require.ErrorIs(t, err, fs.ErrPermission)
 		require.False(t, got)
 	})

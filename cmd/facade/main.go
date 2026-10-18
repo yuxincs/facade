@@ -46,7 +46,7 @@ func main() {
 	defer stop()
 
 	e := engine.Engine{
-		Adapters: []engine.Adapter{palworld.Adapter{}},
+		Adapters: []engine.Adapter{&palworld.Adapter{}},
 	}
 	if err := e.Run(ctx); err != nil {
 		fmt.Fprintf(os.Stderr, "facade: engine: %v\n", err)

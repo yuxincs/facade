@@ -7,16 +7,29 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 )
 
 // Adapter provides Palworld-specific discovery and settings.
-type Adapter struct{}
+type Adapter struct {
+	restPort      int
+	adminPassword string
+}
+
+// String keeps credentials out of formatted logs.
+func (a Adapter) String() string {
+	return fmt.Sprintf("palworld.Adapter{restPort: %d, adminPassword: [REDACTED]}", a.restPort)
+}
+
+// GoString also redacts credentials when formatting with %#v.
+func (a Adapter) GoString() string { return a.String() }
 
 // Detect recognizes an installation from its root, Pal, Saved, or Config directory.
 // It checks known layouts and requires the REST API to be enabled in active settings.
-func (Adapter) Detect(dir string) (bool, error) {
+func (a *Adapter) Detect(dir string) (bool, error) {
+	a.restPort, a.adminPassword = 0, ""
 	info, err := os.Stat(dir)
 	if err != nil {
 		return false, fmt.Errorf("palworld: inspect directory: %w", err)
@@ -58,6 +71,21 @@ func (Adapter) Detect(dir string) (bool, error) {
 		if !strings.EqualFold(options["restapienabled"], "True") {
 			return false, fmt.Errorf("palworld: REST API is disabled or not configured; set RESTAPIEnabled=True inside OptionSettings in %s, then restart the server if it is running", config)
 		}
+		port := 8212
+		if value, found := options["restapiport"]; found {
+			port, err = strconv.Atoi(value)
+			if err != nil || port < 1 || port > 65535 {
+				return false, fmt.Errorf("palworld: RESTAPIPort in %s must be an integer between 1 and 65535", config)
+			}
+		}
+		password := options["adminpassword"]
+		if strings.HasPrefix(password, "\"") {
+			password, err = strconv.Unquote(password)
+			if err != nil {
+				return false, fmt.Errorf("palworld: invalid quoted AdminPassword in %s; check its quotes and escape sequences", config)
+			}
+		}
+		a.restPort, a.adminPassword = port, password
 		return true, nil
 	}
 	for _, launcher := range []string{"PalServer.sh", "PalServer.exe"} {
