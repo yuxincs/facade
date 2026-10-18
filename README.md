@@ -7,15 +7,18 @@ join and stopping it after it becomes idle.
 The project is initialized with a CLI and static binary build. Network forwarding,
 game adapters, configuration discovery, and server management are planned.
 
+Running `facade` without arguments invokes the engine with the Palworld adapter.
+The engine is currently a placeholder and exits with an unsupported-operation error.
+
 ## Development
 
 Requires Go 1.27 or newer.
 
 ```sh
-go run ./cmd/facade help
+go run ./cmd/facade -help
 make check
 make build
-./bin/facade version
+./bin/facade -version
 ```
 
 GitHub Actions runs `make check` and `make build` on pushes and pull requests.
@@ -35,7 +38,7 @@ and copies it into a `scratch` image running as a non-root user.
 
 ```sh
 docker build -t facade .
-docker run --rm facade version
+docker run --rm facade -version
 ```
 
 Build Linux images for both common server architectures with Docker Buildx:

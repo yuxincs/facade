@@ -2,45 +2,54 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"fmt"
-	"io"
 	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/yuxincs/facade/internal/engine"
+	"github.com/yuxincs/facade/internal/games/palworld"
 )
 
 // version can be set at build time with -ldflags '-X main.version=...'.
 var version = "dev"
 
-const usage = `Facade — on-demand game server proxy
-
-Usage:
-  facade help       Show this help
-  facade version    Print the version
-
-Proxying and server lifecycle management are under development.
-`
-
 func main() {
-	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
-}
-
-func run(args []string, stdout, stderr io.Writer) int {
-	if len(args) == 0 {
-		fmt.Fprint(stdout, usage)
-		return 0
-	}
-	if len(args) != 1 {
-		fmt.Fprintln(stderr, "facade: expected a single command; use 'facade help'")
-		return 2
+	flags := flag.NewFlagSet("facade", flag.ContinueOnError)
+	flags.SetOutput(os.Stderr)
+	showVersion := flags.Bool("version", false, "Print the version and exit")
+	flags.Usage = func() {
+		fmt.Fprintln(flags.Output(), "Facade — on-demand game server proxy")
+		fmt.Fprintln(flags.Output(), "\nUsage: facade [flags]")
+		flags.PrintDefaults()
 	}
 
-	switch args[0] {
-	case "help", "--help", "-h":
-		fmt.Fprint(stdout, usage)
-	case "version", "--version":
-		fmt.Fprintf(stdout, "facade %s\n", version)
-	default:
-		fmt.Fprintf(stderr, "facade: unknown command %q; use 'facade help'\n", args[0])
-		return 2
+	if err := flags.Parse(os.Args[1:]); err != nil {
+		if err == flag.ErrHelp {
+			return
+		}
+		os.Exit(2)
 	}
-	return 0
+	if flags.NArg() != 0 {
+		fmt.Fprintf(os.Stderr, "facade: unexpected argument %q\n", flags.Arg(0))
+		flags.Usage()
+		os.Exit(2)
+	}
+	if *showVersion {
+		fmt.Fprintf(os.Stdout, "facade %s\n", version)
+		return
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	e := engine.Engine{
+		Adapters: []engine.Adapter{palworld.Adapter{}},
+	}
+	if err := e.Run(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "facade: engine: %v\n", err)
+		os.Exit(1)
+	}
 }

@@ -17,4 +17,3 @@ FROM scratch
 COPY --from=build /out/facade /facade
 USER 65532:65532
 ENTRYPOINT ["/facade"]
-CMD ["help"]
