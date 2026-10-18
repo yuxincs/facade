@@ -9,8 +9,8 @@ forwarding, settings parsing, and server management are planned.
 
 Running `facade` without arguments detects the game in the current working directory,
 reports the selected adapter, and exits. No match, multiple matches, or detection
-errors result in a nonzero exit status. Palworld detection supports the installation
-root and its `Pal`, `Saved`, and `Config` directories.
+errors result in a nonzero exit status. Run Facade from the Palworld installation
+root, with settings under `Pal/Saved/Config/LinuxServer` or `WindowsServer`.
 
 Palworld requires `RESTAPIEnabled=True` inside `OptionSettings` in the active
 `PalWorldSettings.ini`. Facade validates this during detection and reports the

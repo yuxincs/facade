@@ -29,8 +29,8 @@ func TestAdapterSettings(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			dir := t.TempDir()
-			config := filepath.Join(dir, "LinuxServer")
-			require.NoError(t, os.Mkdir(config, 0o755))
+			config := filepath.Join(dir, "Pal", "Saved", "Config", "LinuxServer")
+			require.NoError(t, os.MkdirAll(config, 0o755))
 			ini := "[/Script/Pal.PalGameWorldSettings]\nOptionSettings=(RESTAPIEnabled=True," + test.settings + ")\n"
 			require.NoError(t, os.WriteFile(filepath.Join(config, "PalWorldSettings.ini"), []byte(ini), 0o644))
 
@@ -60,8 +60,8 @@ func TestAdapterSettingsError(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			dir := t.TempDir()
-			config := filepath.Join(dir, "LinuxServer")
-			require.NoError(t, os.Mkdir(config, 0o755))
+			config := filepath.Join(dir, "Pal", "Saved", "Config", "LinuxServer")
+			require.NoError(t, os.MkdirAll(config, 0o755))
 			ini := "[/Script/Pal.PalGameWorldSettings]\nOptionSettings=(RESTAPIEnabled=True," + test.settings + ")\n"
 			require.NoError(t, os.WriteFile(filepath.Join(config, "PalWorldSettings.ini"), []byte(ini), 0o644))
 

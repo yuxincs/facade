@@ -26,7 +26,7 @@ func (a Adapter) String() string {
 // GoString also redacts credentials when formatting with %#v.
 func (a Adapter) GoString() string { return a.String() }
 
-// Detect recognizes an installation from its root, Pal, Saved, or Config directory.
+// Detect recognizes a Palworld server installation root.
 // It checks known layouts and requires the REST API to be enabled in active settings.
 func (a *Adapter) Detect(dir string) (bool, error) {
 	a.restPort, a.adminPassword = 0, ""
@@ -42,12 +42,6 @@ func (a *Adapter) Detect(dir string) (bool, error) {
 	for _, marker := range []string{
 		"Pal/Saved/Config/LinuxServer/PalWorldSettings.ini",
 		"Pal/Saved/Config/WindowsServer/PalWorldSettings.ini",
-		"Saved/Config/LinuxServer/PalWorldSettings.ini",
-		"Saved/Config/WindowsServer/PalWorldSettings.ini",
-		"Config/LinuxServer/PalWorldSettings.ini",
-		"Config/WindowsServer/PalWorldSettings.ini",
-		"LinuxServer/PalWorldSettings.ini",
-		"WindowsServer/PalWorldSettings.ini",
 	} {
 		info, err := os.Stat(filepath.Join(dir, filepath.FromSlash(marker)))
 		if errors.Is(err, fs.ErrNotExist) || errors.Is(err, syscall.ENOTDIR) {
@@ -58,7 +52,7 @@ func (a *Adapter) Detect(dir string) (bool, error) {
 		}
 		if info.Mode().IsRegular() {
 			if config != "" {
-				return false, fmt.Errorf("palworld: multiple active settings files found: %s and %s; run Facade from the intended Config directory", config, marker)
+				return false, fmt.Errorf("palworld: multiple active settings files found: %s and %s; expected one platform configuration per server root", config, marker)
 			}
 			config = filepath.Join(dir, filepath.FromSlash(marker))
 		}

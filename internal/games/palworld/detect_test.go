@@ -35,8 +35,8 @@ func TestDetect(t *testing.T) {
 		t.Run(settings, func(t *testing.T) {
 			t.Parallel()
 			dir := t.TempDir()
-			config := filepath.Join(dir, "LinuxServer")
-			require.NoError(t, os.Mkdir(config, 0o755))
+			config := filepath.Join(dir, "Pal", "Saved", "Config", "LinuxServer")
+			require.NoError(t, os.MkdirAll(config, 0o755))
 			ini := "\ufeff[/Script/Pal.PalGameWorldSettings]\r\nOptionSettings=(" + settings + ")\r\n"
 			require.NoError(t, os.WriteFile(filepath.Join(config, "PalWorldSettings.ini"), []byte(ini), 0o644))
 			got, err := (&palworld.Adapter{}).Detect(dir)
@@ -49,6 +49,17 @@ func TestDetect(t *testing.T) {
 
 func TestDetectFalse(t *testing.T) {
 	t.Parallel()
+
+	for _, root := range palworldtest.Scenarios(t) {
+		for _, subdir := range []string{"Pal", "Pal/Saved", "Pal/Saved/Config"} {
+			t.Run(filepath.Base(root)+"/"+subdir, func(t *testing.T) {
+				t.Parallel()
+				matched, err := (&palworld.Adapter{}).Detect(filepath.Join(root, filepath.FromSlash(subdir)))
+				require.NoError(t, err)
+				require.False(t, matched)
+			})
+		}
+	}
 
 	for _, test := range []struct {
 		name    string
@@ -129,8 +140,8 @@ func TestDetectError(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			dir := t.TempDir()
-			config := filepath.Join(dir, "LinuxServer")
-			require.NoError(t, os.Mkdir(config, 0o755))
+			config := filepath.Join(dir, "Pal", "Saved", "Config", "LinuxServer")
+			require.NoError(t, os.MkdirAll(config, 0o755))
 			section := test.section
 			if section == "" {
 				section = "/Script/Pal.PalGameWorldSettings"
