@@ -15,6 +15,8 @@ type adapterFunc func(string) (bool, error)
 
 func (f adapterFunc) Detect(dir string) (bool, error) { return f(dir) }
 
+func (adapterFunc) Protocol() string { return "tcp" }
+
 func TestRun(t *testing.T) {
 	t.Parallel()
 	dir, err := os.Getwd()

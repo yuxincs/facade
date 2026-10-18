@@ -9,10 +9,12 @@ import (
 	"strings"
 )
 
-// Adapter provides game-specific installation detection.
+// Adapter provides game-specific detection and transport details.
 type Adapter interface {
 	// Detect reports whether dir looks like an installation of this game.
 	Detect(dir string) (bool, error)
+	// Protocol returns the gameplay transport: "tcp" or "udp".
+	Protocol() string
 }
 
 // Engine coordinates the registered game adapters.
