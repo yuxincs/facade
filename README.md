@@ -18,6 +18,10 @@ make build
 ./bin/facade version
 ```
 
+GitHub Actions runs `make check` and `make build` on pushes and pull requests.
+Formatting checks cover all Go files in the repository and fail without rewriting
+files. Run `make fmt` to fix formatting locally.
+
 Set a version when building a release:
 
 ```sh
