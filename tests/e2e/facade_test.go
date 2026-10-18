@@ -2,9 +2,11 @@ package e2e_test
 
 import (
 	"context"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -42,6 +44,18 @@ func TestFacade(t *testing.T) {
 			wantOutput: "detected game",
 		})
 	}
+	disabledDir := palworldtest.Scenarios(t)[0]
+	config := filepath.Join(disabledDir, "Pal", "Saved", "Config", "LinuxServer", "PalWorldSettings.ini")
+	settings, err := os.ReadFile(config)
+	require.NoError(t, err)
+	settings = []byte(strings.ReplaceAll(string(settings), "RESTAPIEnabled=True", "RESTAPIEnabled=False"))
+	require.NoError(t, os.WriteFile(config, settings, 0o644))
+	cases = append(cases, testCase{
+		name:       "REST API disabled",
+		dir:        disabledDir,
+		wantExit:   1,
+		wantOutput: "set RESTAPIEnabled=True",
+	})
 
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
@@ -59,6 +73,7 @@ func TestFacade(t *testing.T) {
 				require.Equal(t, test.wantExit, exitErr.ExitCode(), "%s", output)
 			}
 			require.Contains(t, string(output), test.wantOutput)
+			require.NotContains(t, string(output), "test-only")
 		})
 	}
 }

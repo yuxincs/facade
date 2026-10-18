@@ -12,6 +12,12 @@ reports the selected adapter, and exits. No match, multiple matches, or detectio
 errors result in a nonzero exit status. Palworld detection supports the installation
 root and its `Pal`, `Saved`, and `Config` directories.
 
+Palworld requires `RESTAPIEnabled=True` inside `OptionSettings` in the active
+`PalWorldSettings.ini`. Facade validates this during detection and reports the
+configuration file to edit if the API is disabled or missing. Launcher-only
+installations need an active configuration first. See the
+[Palworld REST API guide](https://docs.palworldgame.com/api/rest-api/palwold-rest-api/).
+
 ## Development
 
 Requires Go 1.27 or newer.
