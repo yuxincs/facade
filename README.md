@@ -4,11 +4,13 @@ An on-demand game server proxy written in Go. Facade aims to keep a lightweight
 public endpoint available while starting the actual game server when players
 join and stopping it after it becomes idle.
 
-The project is initialized with a CLI and static binary build. Network forwarding,
-game adapters, configuration discovery, and server management are planned.
+The project supports game detection with a CLI and static binary build. Network
+forwarding, settings parsing, and server management are planned.
 
-Running `facade` without arguments invokes the engine with the Palworld adapter.
-The engine is currently a placeholder and exits with an unsupported-operation error.
+Running `facade` without arguments detects the game in the current working directory,
+reports the selected adapter, and exits. No match, multiple matches, or detection
+errors result in a nonzero exit status. Palworld detection supports the installation
+root and its `Pal`, `Saved`, and `Config` directories.
 
 ## Development
 
@@ -24,6 +26,10 @@ make build
 GitHub Actions runs `make check` and `make build` on pushes and pull requests.
 Formatting checks cover all Go files in the repository and fail without rewriting
 files. Run `make fmt` to fix formatting locally.
+
+`go test ./...` includes E2E tests that build and launch the actual Facade binary
+in the shared Palworld scenario directories. Run just those tests with
+`go test ./tests/e2e`.
 
 Set a version when building a release:
 
