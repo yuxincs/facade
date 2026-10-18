@@ -61,7 +61,7 @@ platform with `--load` to load an image into the local Docker daemon.
 - Keep player monitoring failures distinct from a confirmed empty server.
 
 Minecraft codec dependencies will be selected as adapters are implemented. The
-initial module uses only the Go standard library.
+application uses only the Go standard library; tests use `testify/require`.
 
 ## License
 
