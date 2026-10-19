@@ -16,15 +16,19 @@ import (
 func TestDetect(t *testing.T) {
 	t.Parallel()
 
-	for _, dir := range palworldtest.Scenarios(t) {
-		t.Run(filepath.Base(dir), func(t *testing.T) {
-			t.Parallel()
-
-			got, err := (&palworld.Adapter{}).Detect(dir)
-			require.NoError(t, err)
-			require.True(t, got)
-		})
-	}
+	t.Run("embedded installation", func(t *testing.T) {
+		t.Parallel()
+		entries, err := fs.ReadDir(palworldtest.Files, ".")
+		require.NoError(t, err)
+		if len(entries) == 0 {
+			t.Skip("no Palworld fixture for this platform")
+		}
+		dir := t.TempDir()
+		require.NoError(t, os.CopyFS(dir, palworldtest.Files))
+		got, err := (&palworld.Adapter{}).Detect(dir)
+		require.NoError(t, err)
+		require.True(t, got)
+	})
 
 	for _, settings := range []string{
 		"RESTAPIEnabled=True",
@@ -50,15 +54,20 @@ func TestDetect(t *testing.T) {
 func TestDetectFalse(t *testing.T) {
 	t.Parallel()
 
-	for _, root := range palworldtest.Scenarios(t) {
-		for _, subdir := range []string{"Pal", "Pal/Saved", "Pal/Saved/Config"} {
-			t.Run(filepath.Base(root)+"/"+subdir, func(t *testing.T) {
-				t.Parallel()
-				matched, err := (&palworld.Adapter{}).Detect(filepath.Join(root, filepath.FromSlash(subdir)))
-				require.NoError(t, err)
-				require.False(t, matched)
-			})
-		}
+	root := t.TempDir()
+	entries, err := fs.ReadDir(palworldtest.Files, ".")
+	require.NoError(t, err)
+	require.NoError(t, os.CopyFS(root, palworldtest.Files))
+	for _, subdir := range []string{"Pal", "Pal/Saved", "Pal/Saved/Config"} {
+		t.Run(subdir, func(t *testing.T) {
+			t.Parallel()
+			if len(entries) == 0 {
+				t.Skip("no Palworld fixture for this platform")
+			}
+			matched, err := (&palworld.Adapter{}).Detect(filepath.Join(root, filepath.FromSlash(subdir)))
+			require.NoError(t, err)
+			require.False(t, matched)
+		})
 	}
 
 	for _, test := range []struct {
@@ -161,12 +170,13 @@ func TestDetectError(t *testing.T) {
 
 	t.Run("ambiguous configuration", func(t *testing.T) {
 		t.Parallel()
-		dir := palworldtest.Scenarios(t)[0]
+		dir := t.TempDir()
 		config := filepath.Join(dir, "Pal", "Saved", "Config")
-		settings, err := os.ReadFile(filepath.Join(config, "LinuxServer", "PalWorldSettings.ini"))
-		require.NoError(t, err)
-		require.NoError(t, os.Mkdir(filepath.Join(config, "WindowsServer"), 0o755))
-		require.NoError(t, os.WriteFile(filepath.Join(config, "WindowsServer", "PalWorldSettings.ini"), settings, 0o644))
+		for _, platform := range []string{"LinuxServer", "WindowsServer"} {
+			require.NoError(t, os.MkdirAll(filepath.Join(config, platform), 0o755))
+			settings := "[/Script/Pal.PalGameWorldSettings]\nOptionSettings=(RESTAPIEnabled=True)\n"
+			require.NoError(t, os.WriteFile(filepath.Join(config, platform, "PalWorldSettings.ini"), []byte(settings), 0o644))
+		}
 		got, err := (&palworld.Adapter{}).Detect(dir)
 		require.False(t, got)
 		require.ErrorContains(t, err, "multiple active settings files")

@@ -34,7 +34,9 @@ Formatting checks cover all Go files in the repository and fail without rewritin
 files. Run `make fmt` to fix formatting locally.
 
 `go test ./...` includes E2E tests that build and launch the actual Facade binary
-in the shared Palworld scenario directories. Run just those tests with
+in a copy of the shared Palworld fixture. The embedded testdata exposes the Linux
+or Windows server root based on the host platform; other platforms expose an
+empty filesystem and skip fixture-dependent cases. Run just those tests with
 `go test ./tests/e2e`.
 
 Set a version when building a release:

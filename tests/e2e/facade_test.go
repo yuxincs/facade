@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"context"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,40 +31,48 @@ func TestFacade(t *testing.T) {
 
 	type testCase struct {
 		name       string
-		dir        string
+		files      fs.FS
+		prepare    func(*testing.T, string)
 		wantExit   int
 		wantOutput string
 	}
 	cases := []testCase{
-		{name: "empty directory", dir: t.TempDir(), wantExit: 1, wantOutput: "no supported game detected"},
+		{name: "palworld", files: palworldtest.Files, wantOutput: "detected game"},
+		{name: "empty directory", wantExit: 1, wantOutput: "no supported game detected"},
+		{
+			name: "REST API disabled", files: palworldtest.Files,
+			wantExit: 1, wantOutput: "set RESTAPIEnabled=True",
+			prepare: func(t *testing.T, dir string) {
+				configs, err := filepath.Glob(filepath.Join(dir, "Pal", "Saved", "Config", "*", "PalWorldSettings.ini"))
+				require.NoError(t, err)
+				require.Len(t, configs, 1)
+				settings, err := os.ReadFile(configs[0])
+				require.NoError(t, err)
+				settings = []byte(strings.ReplaceAll(string(settings), "RESTAPIEnabled=True", "RESTAPIEnabled=False"))
+				require.NoError(t, os.WriteFile(configs[0], settings, 0o644))
+			},
+		},
 	}
-	for _, dir := range palworldtest.Scenarios(t) {
-		cases = append(cases, testCase{
-			name:       filepath.Base(dir),
-			dir:        dir,
-			wantOutput: "detected game",
-		})
-	}
-	disabledDir := palworldtest.Scenarios(t)[0]
-	config := filepath.Join(disabledDir, "Pal", "Saved", "Config", "LinuxServer", "PalWorldSettings.ini")
-	settings, err := os.ReadFile(config)
-	require.NoError(t, err)
-	settings = []byte(strings.ReplaceAll(string(settings), "RESTAPIEnabled=True", "RESTAPIEnabled=False"))
-	require.NoError(t, os.WriteFile(config, settings, 0o644))
-	cases = append(cases, testCase{
-		name:       "REST API disabled",
-		dir:        disabledDir,
-		wantExit:   1,
-		wantOutput: "set RESTAPIEnabled=True",
-	})
 
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			dir := t.TempDir()
+			if test.files != nil {
+				entries, err := fs.ReadDir(test.files, ".")
+				require.NoError(t, err)
+				if len(entries) == 0 {
+					t.Skip("no fixture for this platform")
+				}
+				require.NoError(t, os.CopyFS(dir, test.files))
+			}
+			if test.prepare != nil {
+				test.prepare(t, dir)
+			}
 			ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
 			defer cancel()
 			cmd := exec.CommandContext(ctx, binary)
-			cmd.Dir = test.dir
+			cmd.Dir = dir
 			output, err := cmd.CombinedOutput()
 			if test.wantExit == 0 {
 				require.NoError(t, err, "%s", output)
