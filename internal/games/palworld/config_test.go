@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAdapterSettings(t *testing.T) {
+func TestPalworldSettings(t *testing.T) {
 	t.Parallel()
 
 	for _, test := range []struct {
@@ -34,17 +34,17 @@ func TestAdapterSettings(t *testing.T) {
 			ini := "[/Script/Pal.PalGameWorldSettings]\nOptionSettings=(RESTAPIEnabled=True," + test.settings + ")\n"
 			require.NoError(t, os.WriteFile(filepath.Join(config, "PalWorldSettings.ini"), []byte(ini), 0o644))
 
-			var adapter Adapter
-			matched, err := adapter.Detect(dir)
+			var game Palworld
+			matched, err := game.Detect(dir)
 			require.NoError(t, err)
 			require.True(t, matched)
-			require.Equal(t, test.port, adapter.restPort)
-			require.Equal(t, test.password, adapter.adminPassword)
+			require.Equal(t, test.port, game.restPort)
+			require.Equal(t, test.password, game.adminPassword)
 		})
 	}
 }
 
-func TestAdapterSettingsError(t *testing.T) {
+func TestPalworldSettingsError(t *testing.T) {
 	t.Parallel()
 
 	for _, test := range []struct {
@@ -65,34 +65,34 @@ func TestAdapterSettingsError(t *testing.T) {
 			ini := "[/Script/Pal.PalGameWorldSettings]\nOptionSettings=(RESTAPIEnabled=True," + test.settings + ")\n"
 			require.NoError(t, os.WriteFile(filepath.Join(config, "PalWorldSettings.ini"), []byte(ini), 0o644))
 
-			adapter := Adapter{restPort: 9000, adminPassword: "old-password"}
-			matched, err := adapter.Detect(dir)
+			game := Palworld{restPort: 9000, adminPassword: "old-password"}
+			matched, err := game.Detect(dir)
 			require.Error(t, err)
 			require.False(t, matched)
-			require.Zero(t, adapter.restPort)
-			require.Empty(t, adapter.adminPassword)
+			require.Zero(t, game.restPort)
+			require.Empty(t, game.adminPassword)
 			require.NotContains(t, err.Error(), "never-log-secret")
 		})
 	}
 }
 
-func TestAdapterSettingsClearedOnNoMatch(t *testing.T) {
+func TestPalworldSettingsClearedOnNoMatch(t *testing.T) {
 	t.Parallel()
-	adapter := Adapter{restPort: 9000, adminPassword: "old-password"}
-	matched, err := adapter.Detect(t.TempDir())
+	game := Palworld{restPort: 9000, adminPassword: "old-password"}
+	matched, err := game.Detect(t.TempDir())
 	require.NoError(t, err)
 	require.False(t, matched)
-	require.Zero(t, adapter.restPort)
-	require.Empty(t, adapter.adminPassword)
+	require.Zero(t, game.restPort)
+	require.Empty(t, game.adminPassword)
 }
 
-func TestAdapterRedactsPassword(t *testing.T) {
+func TestPalworldRedactsPassword(t *testing.T) {
 	t.Parallel()
-	adapter := Adapter{restPort: 8212, adminPassword: "never-log-secret"}
-	for _, value := range []any{adapter, &adapter} {
+	game := Palworld{restPort: 8212, adminPassword: "never-log-secret"}
+	for _, value := range []any{game, &game} {
 		for _, format := range []string{"%v", "%+v", "%#v"} {
 			output := fmt.Sprintf(format, value)
-			require.NotContains(t, output, adapter.adminPassword)
+			require.NotContains(t, output, game.adminPassword)
 			require.Contains(t, output, "[REDACTED]")
 		}
 	}
@@ -102,7 +102,7 @@ func TestAdapterRedactsPassword(t *testing.T) {
 		if json {
 			handler = slog.NewJSONHandler(&output, nil)
 		}
-		slog.New(handler).Info("adapter settings", "adapter", &adapter)
-		require.NotContains(t, output.String(), adapter.adminPassword)
+		slog.New(handler).Info("game settings", "game", &game)
+		require.NotContains(t, output.String(), game.adminPassword)
 	}
 }

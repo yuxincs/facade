@@ -16,7 +16,7 @@ import (
 // version can be set at build time with -ldflags '-X main.version=...'.
 var version = "dev"
 
-var _registeredAdapters = []engine.Adapter{&palworld.Adapter{}}
+var _games = []engine.Game{&palworld.Palworld{}}
 
 func main() {
 	flags := flag.NewFlagSet("facade", flag.ContinueOnError)
@@ -48,7 +48,7 @@ func main() {
 	defer stop()
 
 	e := engine.Engine{
-		Adapters: _registeredAdapters,
+		Games: _games,
 	}
 	if err := e.Run(ctx); err != nil {
 		fmt.Fprintf(os.Stderr, "facade: engine: %v\n", err)

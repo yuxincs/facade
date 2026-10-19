@@ -8,11 +8,11 @@ import (
 	"github.com/yuxincs/facade/internal/engine"
 )
 
-func TestUDPAdaptersImplementPlayerCounter(t *testing.T) {
+func TestUDPGamesImplementPlayerCounter(t *testing.T) {
 	t.Parallel()
-	for _, adapter := range _registeredAdapters {
-		if adapter.Protocol() == "udp" {
-			require.Implements(t, (*engine.PlayerCounter)(nil), adapter, "UDP adapter %T must support player counting", adapter)
+	for _, game := range _games {
+		if game.Protocol() == "udp" {
+			require.Implements(t, (*engine.PlayerCounter)(nil), game, "UDP game %T must support player counting", game)
 		}
 	}
 }

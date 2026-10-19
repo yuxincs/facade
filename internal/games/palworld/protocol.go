@@ -1,6 +1,6 @@
 package palworld
 
 // Protocol returns Palworld's gameplay transport.
-func (*Adapter) Protocol() string {
+func (*Palworld) Protocol() string {
 	return "udp"
 }

@@ -11,39 +11,39 @@ import (
 	"github.com/yuxincs/facade/internal/engine"
 )
 
-type adapterFunc func(string) (bool, error)
+type gameFunc func(string) (bool, error)
 
-func (f adapterFunc) Detect(dir string) (bool, error) { return f(dir) }
+func (f gameFunc) Detect(dir string) (bool, error) { return f(dir) }
 
-func (adapterFunc) Protocol() string { return "tcp" }
+func (gameFunc) Protocol() string { return "tcp" }
 
 func TestRun(t *testing.T) {
 	t.Parallel()
 	dir, err := os.Getwd()
 	require.NoError(t, err)
 	failure := errors.New("cannot inspect installation")
-	match := adapterFunc(func(got string) (bool, error) {
+	match := gameFunc(func(got string) (bool, error) {
 		return got == dir, nil
 	})
-	miss := adapterFunc(func(string) (bool, error) { return false, nil })
-	broken := adapterFunc(func(string) (bool, error) { return false, failure })
+	miss := gameFunc(func(string) (bool, error) { return false, nil })
+	broken := gameFunc(func(string) (bool, error) { return false, failure })
 
 	for _, test := range []struct {
-		name     string
-		adapters []engine.Adapter
-		wantErr  string
-		cause    error
+		name    string
+		games   []engine.Game
+		wantErr string
+		cause   error
 	}{
-		{name: "no adapters", wantErr: "no supported game detected"},
-		{name: "no match", adapters: []engine.Adapter{miss}, wantErr: "no supported game detected"},
-		{name: "one match", adapters: []engine.Adapter{miss, match, miss}},
-		{name: "multiple matches", adapters: []engine.Adapter{match, match}, wantErr: "multiple game adapters matched"},
-		{name: "detection error", adapters: []engine.Adapter{broken}, wantErr: "detect engine_test.adapterFunc", cause: failure},
-		{name: "error after match", adapters: []engine.Adapter{match, broken}, wantErr: "detect engine_test.adapterFunc", cause: failure},
+		{name: "no games", wantErr: "no supported game detected"},
+		{name: "no match", games: []engine.Game{miss}, wantErr: "no supported game detected"},
+		{name: "one match", games: []engine.Game{miss, match, miss}},
+		{name: "multiple matches", games: []engine.Game{match, match}, wantErr: "multiple games matched"},
+		{name: "detection error", games: []engine.Game{broken}, wantErr: "detect engine_test.gameFunc", cause: failure},
+		{name: "error after match", games: []engine.Game{match, broken}, wantErr: "detect engine_test.gameFunc", cause: failure},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			e := engine.Engine{Adapters: test.adapters}
+			e := engine.Engine{Games: test.games}
 			err := e.Run(t.Context())
 			if test.wantErr == "" {
 				require.NoError(t, err)
@@ -61,8 +61,8 @@ func TestRunCanceled(t *testing.T) {
 	t.Parallel()
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
-	e := engine.Engine{Adapters: []engine.Adapter{
-		adapterFunc(func(string) (bool, error) {
+	e := engine.Engine{Games: []engine.Game{
+		gameFunc(func(string) (bool, error) {
 			t.Fatal("Detect called with canceled context")
 			return false, nil
 		}),

@@ -1,4 +1,3 @@
-// Package palworld provides the Palworld game adapter.
 package palworld
 
 import (
@@ -12,23 +11,9 @@ import (
 	"syscall"
 )
 
-// Adapter provides Palworld-specific discovery and settings.
-type Adapter struct {
-	restPort      int
-	adminPassword string
-}
-
-// String keeps credentials out of formatted logs.
-func (a Adapter) String() string {
-	return fmt.Sprintf("palworld.Adapter{restPort: %d, adminPassword: [REDACTED]}", a.restPort)
-}
-
-// GoString also redacts credentials when formatting with %#v.
-func (a Adapter) GoString() string { return a.String() }
-
 // Detect recognizes a Palworld server installation root.
 // It checks known layouts and requires the REST API to be enabled in active settings.
-func (a *Adapter) Detect(dir string) (bool, error) {
+func (a *Palworld) Detect(dir string) (bool, error) {
 	a.restPort, a.adminPassword = 0, ""
 	info, err := os.Stat(dir)
 	if err != nil {

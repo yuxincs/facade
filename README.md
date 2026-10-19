@@ -8,7 +8,7 @@ The project supports game detection with a CLI and static binary build. Network
 forwarding, settings parsing, and server management are planned.
 
 Running `facade` without arguments detects the game in the current working directory,
-reports the selected adapter, and exits. No match, multiple matches, or detection
+reports the selected game, and exits. No match, multiple matches, or detection
 errors result in a nonzero exit status. Run Facade from the Palworld installation
 root, with settings under `Pal/Saved/Config/LinuxServer` or `WindowsServer`.
 
@@ -68,13 +68,13 @@ platform with `--load` to load an image into the local Docker daemon.
 
 - Forward TCP streams and UDP datagrams with minimal allocation and copying.
 - Parse only the packets needed for discovery, join detection, and startup hints.
-- Separate transport, game adapters, and server lifecycle management.
-- Support Minecraft Java, Minecraft Bedrock, and Palworld through game adapters.
+- Separate transport, game integrations, and server lifecycle management.
+- Support Minecraft Java, Minecraft Bedrock, and Palworld through game integrations.
 - Offer generic forwarding for unsupported games, with conservative activity detection.
 - Infer settings from the server directory and launch arguments, with explicit overrides.
 - Keep player monitoring failures distinct from a confirmed empty server.
 
-Minecraft codec dependencies will be selected as adapters are implemented. The
+Minecraft codec dependencies will be selected as games are implemented. The
 application uses only the Go standard library; tests use `testify/require`.
 
 ## License
