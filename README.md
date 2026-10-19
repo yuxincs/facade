@@ -79,4 +79,4 @@ application uses only the Go standard library; tests use `testify/require`.
 
 ## License
 
-[MIT](LICENSE)
+[Apache License 2.0](LICENSE)
