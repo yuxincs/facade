@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -16,6 +17,8 @@ type gameFunc func(string) (bool, error)
 func (f gameFunc) Detect(dir string) (bool, error) { return f(dir) }
 
 func (gameFunc) Protocol() string { return "tcp" }
+
+func (gameFunc) Command(uint16) *exec.Cmd { return nil }
 
 func TestRun(t *testing.T) {
 	t.Parallel()

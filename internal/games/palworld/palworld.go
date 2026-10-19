@@ -9,6 +9,7 @@ import (
 
 // Palworld provides Palworld-specific discovery and settings.
 type Palworld struct {
+	root          string
 	restPort      int
 	adminPassword string
 	restClient    *http.Client

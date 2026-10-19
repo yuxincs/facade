@@ -40,6 +40,7 @@ func TestPalworldSettings(t *testing.T) {
 			require.True(t, matched)
 			require.Equal(t, test.port, game.restPort)
 			require.Equal(t, test.password, game.adminPassword)
+			require.Equal(t, dir, game.root)
 		})
 	}
 }
@@ -67,11 +68,13 @@ func TestPalworldSettingsError(t *testing.T) {
 
 			game := New()
 			game.restPort, game.adminPassword = 9000, "old-password"
+			game.root = "old-root"
 			matched, err := game.Detect(dir)
 			require.Error(t, err)
 			require.False(t, matched)
 			require.Zero(t, game.restPort)
 			require.Empty(t, game.adminPassword)
+			require.Empty(t, game.root)
 			require.NotContains(t, err.Error(), "never-log-secret")
 		})
 	}
@@ -81,11 +84,13 @@ func TestPalworldSettingsClearedOnNoMatch(t *testing.T) {
 	t.Parallel()
 	game := New()
 	game.restPort, game.adminPassword = 9000, "old-password"
+	game.root = "old-root"
 	matched, err := game.Detect(t.TempDir())
 	require.NoError(t, err)
 	require.False(t, matched)
 	require.Zero(t, game.restPort)
 	require.Empty(t, game.adminPassword)
+	require.Empty(t, game.root)
 }
 
 func TestPalworldRedactsPassword(t *testing.T) {

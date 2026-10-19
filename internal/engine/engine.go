@@ -6,15 +6,19 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/exec"
 	"strings"
 )
 
-// Game provides game-specific detection and transport details.
+// Game provides game-specific detection, transport, and startup details.
 type Game interface {
 	// Detect reports whether dir looks like an installation of this game.
 	Detect(dir string) (bool, error)
 	// Protocol returns the gameplay transport: "tcp" or "udp".
 	Protocol() string
+	// Command builds an unstarted server command after successful detection.
+	// The port is the backend gameplay port chosen by the engine.
+	Command(port uint16) *exec.Cmd
 }
 
 // PlayerCounter is an optional capability required by UDP games.

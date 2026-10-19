@@ -14,6 +14,7 @@ import (
 // Detect recognizes a Palworld server installation root.
 // It checks known layouts and requires the REST API to be enabled in active settings.
 func (a *Palworld) Detect(dir string) (bool, error) {
+	a.root = ""
 	a.restPort, a.adminPassword = 0, ""
 	info, err := os.Stat(dir)
 	if err != nil {
@@ -21,6 +22,10 @@ func (a *Palworld) Detect(dir string) (bool, error) {
 	}
 	if !info.IsDir() {
 		return false, fmt.Errorf("palworld: %q is not a directory", dir)
+	}
+	dir, err = filepath.Abs(dir)
+	if err != nil {
+		return false, fmt.Errorf("palworld: resolve installation root: %w", err)
 	}
 
 	var config string
@@ -65,6 +70,7 @@ func (a *Palworld) Detect(dir string) (bool, error) {
 			}
 		}
 		a.restPort, a.adminPassword = port, password
+		a.root = dir
 		return true, nil
 	}
 	for _, launcher := range []string{"PalServer.sh", "PalServer.exe"} {
