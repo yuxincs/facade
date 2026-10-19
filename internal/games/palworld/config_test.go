@@ -34,7 +34,7 @@ func TestPalworldSettings(t *testing.T) {
 			ini := "[/Script/Pal.PalGameWorldSettings]\nOptionSettings=(RESTAPIEnabled=True," + test.settings + ")\n"
 			require.NoError(t, os.WriteFile(filepath.Join(config, "PalWorldSettings.ini"), []byte(ini), 0o644))
 
-			var game Palworld
+			game := New()
 			matched, err := game.Detect(dir)
 			require.NoError(t, err)
 			require.True(t, matched)
@@ -65,7 +65,8 @@ func TestPalworldSettingsError(t *testing.T) {
 			ini := "[/Script/Pal.PalGameWorldSettings]\nOptionSettings=(RESTAPIEnabled=True," + test.settings + ")\n"
 			require.NoError(t, os.WriteFile(filepath.Join(config, "PalWorldSettings.ini"), []byte(ini), 0o644))
 
-			game := Palworld{restPort: 9000, adminPassword: "old-password"}
+			game := New()
+			game.restPort, game.adminPassword = 9000, "old-password"
 			matched, err := game.Detect(dir)
 			require.Error(t, err)
 			require.False(t, matched)
@@ -78,7 +79,8 @@ func TestPalworldSettingsError(t *testing.T) {
 
 func TestPalworldSettingsClearedOnNoMatch(t *testing.T) {
 	t.Parallel()
-	game := Palworld{restPort: 9000, adminPassword: "old-password"}
+	game := New()
+	game.restPort, game.adminPassword = 9000, "old-password"
 	matched, err := game.Detect(t.TempDir())
 	require.NoError(t, err)
 	require.False(t, matched)

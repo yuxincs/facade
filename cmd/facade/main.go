@@ -16,7 +16,7 @@ import (
 // version can be set at build time with -ldflags '-X main.version=...'.
 var version = "dev"
 
-var _games = []engine.Game{&palworld.Palworld{}}
+var _games = []engine.Game{palworld.New()}
 
 func main() {
 	flags := flag.NewFlagSet("facade", flag.ContinueOnError)
