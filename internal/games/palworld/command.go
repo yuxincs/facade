@@ -7,7 +7,7 @@ import (
 	"runtime"
 )
 
-// Command builds an unstarted server command after successful detection.
+// Command builds an unstarted server command using the initialized installation root.
 func (a *Palworld) Command(port uint16) *exec.Cmd {
 	launcher := "PalServer.sh"
 	if runtime.GOOS == "windows" {

@@ -13,7 +13,7 @@ import (
 	"github.com/yuxincs/facade/internal/games/palworld/palworldtest"
 )
 
-func TestDetect(t *testing.T) {
+func TestNew(t *testing.T) {
 	t.Parallel()
 
 	t.Run("embedded installation", func(t *testing.T) {
@@ -25,9 +25,9 @@ func TestDetect(t *testing.T) {
 		}
 		dir := t.TempDir()
 		require.NoError(t, os.CopyFS(dir, palworldtest.Files))
-		got, err := palworld.New().Detect(dir)
+		got, err := palworld.New(dir)
 		require.NoError(t, err)
-		require.True(t, got)
+		require.NotNil(t, got)
 	})
 
 	for _, settings := range []string{
@@ -43,15 +43,15 @@ func TestDetect(t *testing.T) {
 			require.NoError(t, os.MkdirAll(config, 0o755))
 			ini := "\ufeff[/Script/Pal.PalGameWorldSettings]\r\nOptionSettings=(" + settings + ")\r\n"
 			require.NoError(t, os.WriteFile(filepath.Join(config, "PalWorldSettings.ini"), []byte(ini), 0o644))
-			got, err := palworld.New().Detect(dir)
+			got, err := palworld.New(dir)
 			require.NoError(t, err)
-			require.True(t, got)
+			require.NotNil(t, got)
 		})
 	}
 
 }
 
-func TestDetectFalse(t *testing.T) {
+func TestNewNoMatch(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
@@ -64,9 +64,9 @@ func TestDetectFalse(t *testing.T) {
 			if len(entries) == 0 {
 				t.Skip("no Palworld fixture for this platform")
 			}
-			matched, err := palworld.New().Detect(filepath.Join(root, filepath.FromSlash(subdir)))
+			matched, err := palworld.New(filepath.Join(root, filepath.FromSlash(subdir)))
 			require.NoError(t, err)
-			require.False(t, matched)
+			require.Nil(t, matched)
 		})
 	}
 
@@ -106,14 +106,14 @@ func TestDetectFalse(t *testing.T) {
 			if test.prepare != nil {
 				test.prepare(t, dir)
 			}
-			got, err := palworld.New().Detect(dir)
+			got, err := palworld.New(dir)
 			require.NoError(t, err)
-			require.False(t, got)
+			require.Nil(t, got)
 		})
 	}
 }
 
-func TestDetectError(t *testing.T) {
+func TestNewError(t *testing.T) {
 	t.Parallel()
 
 	for _, launcher := range []string{"PalServer.sh", "PalServer.exe"} {
@@ -121,8 +121,8 @@ func TestDetectError(t *testing.T) {
 			t.Parallel()
 			dir := t.TempDir()
 			require.NoError(t, os.WriteFile(filepath.Join(dir, launcher), nil, 0o644))
-			got, err := palworld.New().Detect(dir)
-			require.False(t, got)
+			got, err := palworld.New(dir)
+			require.Nil(t, got)
 			require.ErrorContains(t, err, "no active PalWorldSettings.ini")
 			require.ErrorContains(t, err, "RESTAPIEnabled=True")
 		})
@@ -160,8 +160,8 @@ func TestDetectError(t *testing.T) {
 			require.NoError(t, os.WriteFile(path, []byte(ini), 0o644))
 			// A launcher must not bypass validation of the active configuration.
 			require.NoError(t, os.WriteFile(filepath.Join(dir, "PalServer.sh"), nil, 0o644))
-			got, err := palworld.New().Detect(dir)
-			require.False(t, got)
+			got, err := palworld.New(dir)
+			require.Nil(t, got)
 			require.ErrorContains(t, err, test.wantErr)
 			require.ErrorContains(t, err, path)
 			require.NotContains(t, err.Error(), "never-log-secret")
@@ -177,25 +177,25 @@ func TestDetectError(t *testing.T) {
 			settings := "[/Script/Pal.PalGameWorldSettings]\nOptionSettings=(RESTAPIEnabled=True)\n"
 			require.NoError(t, os.WriteFile(filepath.Join(config, platform, "PalWorldSettings.ini"), []byte(settings), 0o644))
 		}
-		got, err := palworld.New().Detect(dir)
-		require.False(t, got)
+		got, err := palworld.New(dir)
+		require.Nil(t, got)
 		require.ErrorContains(t, err, "multiple active settings files")
 	})
 
 	t.Run("missing directory", func(t *testing.T) {
 		t.Parallel()
-		got, err := palworld.New().Detect(filepath.Join(t.TempDir(), "missing"))
+		got, err := palworld.New(filepath.Join(t.TempDir(), "missing"))
 		require.ErrorIs(t, err, fs.ErrNotExist)
-		require.False(t, got)
+		require.Nil(t, got)
 	})
 
 	t.Run("file instead of directory", func(t *testing.T) {
 		t.Parallel()
 		path := filepath.Join(t.TempDir(), "file")
 		require.NoError(t, os.WriteFile(path, nil, 0o644))
-		got, err := palworld.New().Detect(path)
+		got, err := palworld.New(path)
 		require.Error(t, err)
-		require.False(t, got)
+		require.Nil(t, got)
 	})
 
 	t.Run("permission denied", func(t *testing.T) {
@@ -209,8 +209,8 @@ func TestDetectError(t *testing.T) {
 		t.Cleanup(func() {
 			require.NoError(t, os.Chmod(locked, 0o755))
 		})
-		got, err := palworld.New().Detect(dir)
+		got, err := palworld.New(dir)
 		require.ErrorIs(t, err, fs.ErrPermission)
-		require.False(t, got)
+		require.Nil(t, got)
 	})
 }

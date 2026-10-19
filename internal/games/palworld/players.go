@@ -13,10 +13,6 @@ var _maxResponseSize = 1 << 20
 
 // PlayerCount returns the number of players reported by the local REST API.
 func (a *Palworld) PlayerCount(ctx context.Context) (int, error) {
-	if a.restPort < 1 || a.restPort > 65535 {
-		return 0, fmt.Errorf("Palworld REST API port is not configured; detect the server first")
-	}
-
 	url := fmt.Sprintf("http://127.0.0.1:%d/v1/api/players", a.restPort)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {

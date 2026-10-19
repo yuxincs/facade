@@ -17,10 +17,9 @@ func TestCommand(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(config, "PalWorldSettings.ini"), []byte(
 		"[/Script/Pal.PalGameWorldSettings]\nOptionSettings=(RESTAPIEnabled=True,PublicPort=8211)\n",
 	), 0o644))
-	game := New()
-	matched, err := game.Detect(dir)
+	game, err := New(dir)
 	require.NoError(t, err)
-	require.True(t, matched)
+	require.NotNil(t, game)
 
 	launcher := "PalServer.sh"
 	if runtime.GOOS == "windows" {

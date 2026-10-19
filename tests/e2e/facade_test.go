@@ -31,12 +31,15 @@ func TestFacade(t *testing.T) {
 
 	type testCase struct {
 		name       string
+		args       []string
 		files      fs.FS
 		prepare    func(*testing.T, string)
 		wantExit   int
 		wantOutput string
 	}
 	cases := []testCase{
+		{name: "help without installation", args: []string{"-help"}, wantOutput: "Usage: facade"},
+		{name: "version without installation", args: []string{"-version"}, wantOutput: "facade dev"},
 		{name: "palworld", files: palworldtest.Files, wantOutput: "detected game"},
 		{name: "empty directory", wantExit: 1, wantOutput: "no supported game detected"},
 		{
@@ -71,7 +74,7 @@ func TestFacade(t *testing.T) {
 			}
 			ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
 			defer cancel()
-			cmd := exec.CommandContext(ctx, binary)
+			cmd := exec.CommandContext(ctx, binary, test.args...)
 			cmd.Dir = dir
 			output, err := cmd.CombinedOutput()
 			if test.wantExit == 0 {

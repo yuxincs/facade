@@ -6,7 +6,8 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -110,19 +111,17 @@ func TestPlayerCountUnavailable(t *testing.T) {
 	require.Zero(t, count)
 }
 
-func TestPlayerCountBeforeDetect(t *testing.T) {
-	count, err := New().PlayerCount(t.Context())
-	require.ErrorContains(t, err, "detect the server first")
-	require.Zero(t, count)
-}
-
 func playerTestGame(t *testing.T, server *httptest.Server) *Palworld {
 	t.Helper()
 	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
 	require.NoError(t, err)
-	restPort, err := strconv.Atoi(port)
+	dir := t.TempDir()
+	config := filepath.Join(dir, "Pal", "Saved", "Config", "LinuxServer")
+	require.NoError(t, os.MkdirAll(config, 0o755))
+	ini := fmt.Sprintf("[/Script/Pal.PalGameWorldSettings]\nOptionSettings=(RESTAPIEnabled=True,RESTAPIPort=%s,AdminPassword=\"secret-password\")\n", port)
+	require.NoError(t, os.WriteFile(filepath.Join(config, "PalWorldSettings.ini"), []byte(ini), 0o644))
+	game, err := New(dir)
 	require.NoError(t, err)
-	game := New()
-	game.restPort, game.adminPassword = restPort, "secret-password"
+	require.NotNil(t, game)
 	return game
 }

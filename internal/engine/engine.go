@@ -10,16 +10,17 @@ import (
 	"strings"
 )
 
-// Game provides game-specific detection, transport, and startup details.
+// Game provides transport and startup details for an initialized game.
 type Game interface {
-	// Detect reports whether dir looks like an installation of this game.
-	Detect(dir string) (bool, error)
 	// Protocol returns the gameplay transport: "tcp" or "udp".
 	Protocol() string
-	// Command builds an unstarted server command after successful detection.
+	// Command builds an unstarted server command.
 	// The port is the backend gameplay port chosen by the engine.
 	Command(port uint16) *exec.Cmd
 }
+
+// GameFactory initializes a game from dir, returning nil, nil for an unrelated directory.
+type GameFactory func(dir string) (Game, error)
 
 // PlayerCounter is an optional capability required by UDP games.
 type PlayerCounter interface {
@@ -29,7 +30,7 @@ type PlayerCounter interface {
 
 // Engine coordinates the registered games.
 type Engine struct {
-	Games []Game
+	Games []GameFactory
 }
 
 // Run detects the game in the working directory and reports the selected game.
@@ -44,15 +45,15 @@ func (e *Engine) Run(ctx context.Context) error {
 	}
 
 	var matches []string
-	for _, game := range e.Games {
+	for _, newGame := range e.Games {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		matched, err := game.Detect(dir)
+		game, err := newGame(dir)
 		if err != nil {
-			return fmt.Errorf("detect %T: %w", game, err)
+			return fmt.Errorf("initialize game: %w", err)
 		}
-		if matched {
+		if game != nil {
 			matches = append(matches, fmt.Sprintf("%T", game))
 		}
 	}

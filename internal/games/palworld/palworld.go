@@ -4,7 +4,6 @@ package palworld
 import (
 	"fmt"
 	"net/http"
-	"time"
 )
 
 // Palworld provides Palworld-specific discovery and settings.
@@ -13,18 +12,6 @@ type Palworld struct {
 	restPort      int
 	adminPassword string
 	restClient    *http.Client
-}
-
-// New creates a Palworld game with a reusable REST API client.
-func New() *Palworld {
-	return &Palworld{
-		restClient: &http.Client{
-			Timeout: 5 * time.Second,
-			CheckRedirect: func(*http.Request, []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		},
-	}
 }
 
 // String keeps credentials out of formatted logs.
