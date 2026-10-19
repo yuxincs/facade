@@ -16,6 +16,8 @@ import (
 // version can be set at build time with -ldflags '-X main.version=...'.
 var version = "dev"
 
+var _registeredAdapters = []engine.Adapter{&palworld.Adapter{}}
+
 func main() {
 	flags := flag.NewFlagSet("facade", flag.ContinueOnError)
 	flags.SetOutput(os.Stderr)
@@ -46,7 +48,7 @@ func main() {
 	defer stop()
 
 	e := engine.Engine{
-		Adapters: []engine.Adapter{&palworld.Adapter{}},
+		Adapters: _registeredAdapters,
 	}
 	if err := e.Run(ctx); err != nil {
 		fmt.Fprintf(os.Stderr, "facade: engine: %v\n", err)

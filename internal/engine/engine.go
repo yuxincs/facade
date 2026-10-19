@@ -17,6 +17,12 @@ type Adapter interface {
 	Protocol() string
 }
 
+// PlayerCounter is an optional capability required by UDP game adapters.
+type PlayerCounter interface {
+	// PlayerCount returns the connected player count. An error means the count is unknown.
+	PlayerCount(ctx context.Context) (int, error)
+}
+
 // Engine coordinates the registered game adapters.
 type Engine struct {
 	Adapters []Adapter
