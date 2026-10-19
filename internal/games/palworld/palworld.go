@@ -23,7 +23,8 @@ type Palworld struct {
 }
 
 // New initializes a Palworld game from its installation root.
-// It returns nil, nil if dir is unrelated, or an error for invalid settings.
+// It returns an error wrapping errors.ErrUnsupported if dir is unrelated.
+// Invalid settings return an error; success always returns an initialized game.
 func New(dir string) (*Palworld, error) {
 	info, err := os.Stat(dir)
 	if err != nil {
@@ -102,7 +103,7 @@ func New(dir string) (*Palworld, error) {
 			return nil, fmt.Errorf("palworld: no active PalWorldSettings.ini found; start the server once to create its configuration directories, copy DefaultPalWorldSettings.ini to Pal/Saved/Config/LinuxServer/PalWorldSettings.ini (WindowsServer on Windows), and set RESTAPIEnabled=True inside OptionSettings")
 		}
 	}
-	return nil, nil
+	return nil, fmt.Errorf("palworld: no installation found in %q: %w", dir, errors.ErrUnsupported)
 }
 
 // String keeps credentials out of formatted logs.

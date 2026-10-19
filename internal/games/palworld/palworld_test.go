@@ -1,6 +1,7 @@
 package palworld_test
 
 import (
+	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuxincs/facade/internal/engine"
 	"github.com/yuxincs/facade/internal/games/palworld"
 	"github.com/yuxincs/facade/internal/games/palworld/palworldtest"
 )
@@ -65,7 +67,7 @@ func TestNewNoMatch(t *testing.T) {
 				t.Skip("no Palworld fixture for this platform")
 			}
 			matched, err := palworld.New(filepath.Join(root, filepath.FromSlash(subdir)))
-			require.NoError(t, err)
+			require.ErrorIs(t, err, errors.ErrUnsupported)
 			require.Nil(t, matched)
 		})
 	}
@@ -107,7 +109,7 @@ func TestNewNoMatch(t *testing.T) {
 				test.prepare(t, dir)
 			}
 			got, err := palworld.New(dir)
-			require.NoError(t, err)
+			require.ErrorIs(t, err, errors.ErrUnsupported)
 			require.Nil(t, got)
 		})
 	}
@@ -213,4 +215,9 @@ func TestNewError(t *testing.T) {
 		require.ErrorIs(t, err, fs.ErrPermission)
 		require.Nil(t, got)
 	})
+}
+
+func TestPlayerCounter(t *testing.T) {
+	t.Parallel()
+	require.Implements(t, (*engine.PlayerCounter)(nil), &palworld.Palworld{})
 }

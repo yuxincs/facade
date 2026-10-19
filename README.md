@@ -8,7 +8,7 @@ The project supports game detection with a CLI and static binary build. Network
 forwarding, settings parsing, and server management are planned.
 
 Running `facade` without arguments detects the game in the current working directory,
-reports the selected game, and exits. No match, multiple matches, or detection
+reports the selected game, and exits. No match, multiple matches, or initialization
 errors result in a nonzero exit status. Run Facade from the Palworld installation
 root, with settings under `Pal/Saved/Config/LinuxServer` or `WindowsServer`.
 
