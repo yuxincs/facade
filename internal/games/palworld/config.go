@@ -14,7 +14,7 @@ func readOptions(path string) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	const maxSize = 1024 * 1024
 	data, err := io.ReadAll(io.LimitReader(file, maxSize+1))
 	if err != nil {

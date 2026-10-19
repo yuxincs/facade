@@ -26,8 +26,8 @@ func main() {
 	flags.SetOutput(os.Stderr)
 	showVersion := flags.Bool("version", false, "Print the version and exit")
 	flags.Usage = func() {
-		fmt.Fprintln(flags.Output(), "Facade — on-demand game server proxy")
-		fmt.Fprintln(flags.Output(), "\nUsage: facade [flags]")
+		_, _ = fmt.Fprintln(flags.Output(), "Facade — on-demand game server proxy")
+		_, _ = fmt.Fprintln(flags.Output(), "\nUsage: facade [flags]")
 		flags.PrintDefaults()
 	}
 
@@ -38,12 +38,12 @@ func main() {
 		os.Exit(2)
 	}
 	if flags.NArg() != 0 {
-		fmt.Fprintf(os.Stderr, "facade: unexpected argument %q\n", flags.Arg(0))
+		_, _ = fmt.Fprintf(os.Stderr, "facade: unexpected argument %q\n", flags.Arg(0))
 		flags.Usage()
 		os.Exit(2)
 	}
 	if *showVersion {
-		fmt.Fprintf(os.Stdout, "facade %s\n", version)
+		_, _ = fmt.Fprintf(os.Stdout, "facade %s\n", version)
 		return
 	}
 
@@ -52,18 +52,18 @@ func main() {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "facade: get working directory: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "facade: get working directory: %v\n", err)
 		os.Exit(1)
 	}
 	game, err := selectGame(ctx, dir, _games...)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "facade: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "facade: %v\n", err)
 		os.Exit(1)
 	}
 	slog.Info("detected game", "game", fmt.Sprintf("%T", game), "directory", dir)
 	e := engine.Engine{Game: game}
 	if err := e.Run(ctx); err != nil {
-		fmt.Fprintf(os.Stderr, "facade: engine: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "facade: engine: %v\n", err)
 		os.Exit(1)
 	}
 }

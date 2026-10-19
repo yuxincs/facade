@@ -18,7 +18,7 @@ func (a *Palworld) Save(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("save Palworld world: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("Palworld save request returned HTTP %d", resp.StatusCode)
 	}

@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   check:
-    name: Format, vet, test, and build
+    name: Format, lint, vet, test, and build
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -28,7 +28,21 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Check formatting, vet, and tests
+      - name: Read golangci-lint version
+        id: golangci-version
+        run: echo "version=$(cat .golangciversion)" >> "$GITHUB_OUTPUT"
+
+      # Use the action for installation and caching; Make runs the actual checks.
+      - name: Install golangci-lint and restore cache
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v${{ steps.golangci-version.outputs.version }}
+          args: -h
+
+      - name: Link golangci-lint for Make
+        run: mkdir -p bin && ln -s "$(command -v golangci-lint)" bin/golangci-lint
+
+      - name: Check formatting, lint, vet, and tests
         run: make check
 
       - name: Build static executable

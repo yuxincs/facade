@@ -44,7 +44,7 @@ func TestPlayerCount(t *testing.T) {
 				requests <- r
 				w.Header().Set("Location", "/unexpected")
 				w.WriteHeader(tt.status)
-				fmt.Fprint(w, tt.body)
+				_, _ = fmt.Fprint(w, tt.body)
 			}))
 			t.Cleanup(server.Close)
 			game := playerTestGame(t, server)

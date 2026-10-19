@@ -30,8 +30,13 @@ make build
 ```
 
 GitHub Actions runs `make check` and `make build` on pushes and pull requests.
-Formatting checks cover all Go files in the repository and fail without rewriting
-files. Run `make fmt` to fix formatting locally.
+`make check` includes golangci-lint. The version is pinned in `.golangciversion`;
+`make lint` installs that version into `bin/` when needed and runs it locally.
+The first installation requires network access, `curl`, and `tar`.
+CI uses the official golangci-lint action to install the pinned version and reuse
+its analysis cache, then runs the same Make targets.
+Formatting uses golangci-lint's `gofmt` formatter. `make format-lint` checks without
+rewriting files; run `make fmt` to apply formatting locally.
 
 `go test ./...` includes E2E tests that build and launch the actual Facade binary
 in a copy of the shared Palworld fixture. The embedded testdata exposes the Linux

@@ -32,7 +32,7 @@ func TestUDPForwarding(t *testing.T) {
 		}
 	}()
 	t.Cleanup(func() {
-		backend.Close()
+		_ = backend.Close()
 		<-echoDone
 	})
 	listener := udpListener(t)
@@ -140,7 +140,7 @@ func udpListener(t *testing.T) *net.UDPConn {
 	t.Helper()
 	conn, err := net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1)})
 	require.NoError(t, err)
-	t.Cleanup(func() { conn.Close() })
+	t.Cleanup(func() { _ = conn.Close() })
 	return conn
 }
 
@@ -148,7 +148,7 @@ func udpClient(t *testing.T, listener *net.UDPConn) *net.UDPConn {
 	t.Helper()
 	conn, err := net.DialUDP("udp4", nil, listener.LocalAddr().(*net.UDPAddr))
 	require.NoError(t, err)
-	t.Cleanup(func() { conn.Close() })
+	t.Cleanup(func() { _ = conn.Close() })
 	return conn
 }
 

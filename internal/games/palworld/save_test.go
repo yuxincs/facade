@@ -24,7 +24,7 @@ func TestSave(t *testing.T) {
 				requests <- r
 				w.Header().Set("Location", "/unexpected")
 				w.WriteHeader(status)
-				fmt.Fprint(w, "secret-password")
+				_, _ = fmt.Fprint(w, "secret-password")
 			}))
 			t.Cleanup(server.Close)
 			game := playerTestGame(t, server)

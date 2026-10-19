@@ -20,7 +20,7 @@ type UDP struct {
 // Run forwards traffic until cancellation or a listener error.
 // It owns listener and closes it and all backend connections before returning.
 func (p *UDP) Run(ctx context.Context, listener *net.UDPConn) error {
-	defer listener.Close()
+	defer func() { _ = listener.Close() }()
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -42,13 +42,13 @@ func (p *UDP) Run(ctx context.Context, listener *net.UDPConn) error {
 	var mu sync.Mutex
 	sessions := make(map[netip.AddrPort]*net.UDPConn)
 	var workers sync.WaitGroup
-	stop := context.AfterFunc(ctx, func() { listener.Close() })
+	stop := context.AfterFunc(ctx, func() { _ = listener.Close() })
 	defer func() {
 		stop()
-		listener.Close()
+		_ = listener.Close()
 		mu.Lock()
 		for _, conn := range sessions {
-			conn.Close()
+			_ = conn.Close()
 		}
 		mu.Unlock()
 		workers.Wait()
@@ -80,7 +80,7 @@ func (p *UDP) Run(ctx context.Context, listener *net.UDPConn) error {
 					if sessions[client] == conn {
 						delete(sessions, client)
 					}
-					conn.Close()
+					_ = conn.Close()
 					mu.Unlock()
 				}()
 				response := make([]byte, 65535)
@@ -89,14 +89,14 @@ func (p *UDP) Run(ctx context.Context, listener *net.UDPConn) error {
 					if err != nil {
 						return
 					}
-					conn.SetReadDeadline(time.Now().Add(idleTimeout))
+					_ = conn.SetReadDeadline(time.Now().Add(idleTimeout))
 					if _, err := listener.WriteToUDPAddrPort(response[:n], client); err != nil {
 						return
 					}
 				}
 			}(conn, client)
 		}
-		conn.SetDeadline(time.Now().Add(idleTimeout))
+		_ = conn.SetDeadline(time.Now().Add(idleTimeout))
 		mu.Unlock()
 		_, err = conn.Write(buffer[:n])
 		if err != nil {
@@ -104,7 +104,7 @@ func (p *UDP) Run(ctx context.Context, listener *net.UDPConn) error {
 			if sessions[client] == conn {
 				delete(sessions, client)
 			}
-			conn.Close()
+			_ = conn.Close()
 			mu.Unlock()
 		}
 	}
