@@ -28,6 +28,11 @@ type PlayerCounter interface {
 	PlayerCount(ctx context.Context) (int, error)
 }
 
+// Saver is an optional capability for persisting game state before suspension or shutdown.
+type Saver interface {
+	Save(ctx context.Context) error
+}
+
 // Engine coordinates the registered games.
 type Engine struct {
 	Games []GameFactory
