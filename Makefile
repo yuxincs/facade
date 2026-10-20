@@ -4,7 +4,7 @@ LDFLAGS := -s -w -X main.version=$(VERSION)
 GOLANGCI_LINT_VERSION := $(shell cat .golangciversion)
 GOLANGCI_LINT := $(CURDIR)/bin/golangci-lint
 
-.PHONY: build check format-lint lint install-golangci-lint fmt clean
+.PHONY: build check cover format-lint lint install-golangci-lint fmt clean
 
 build:
 	mkdir -p bin
@@ -13,6 +13,13 @@ build:
 check: format-lint lint
 	$(GO) vet ./...
 	$(GO) test ./...
+
+cover:
+	rm -rf .coverage
+	mkdir -p .coverage
+	FACADE_COVERAGE_DIR="$(CURDIR)/.coverage" $(GO) test -count=1 -covermode=atomic -coverpkg=./... ./... -args -test.gocoverdir="$(CURDIR)/.coverage"
+	# Build the standard coverage tool for SDKs that omit its prebuilt binary.
+	$(GO) run cmd/covdata textfmt -i=.coverage -o=coverage.out
 
 format-lint: install-golangci-lint
 	"$(GOLANGCI_LINT)" fmt --diff
@@ -32,4 +39,4 @@ fmt: install-golangci-lint
 	"$(GOLANGCI_LINT)" fmt
 
 clean:
-	rm -rf bin
+	rm -rf bin .coverage coverage.out

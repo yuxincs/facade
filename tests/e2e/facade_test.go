@@ -24,7 +24,13 @@ func TestFacade(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	defer cancel()
-	build := exec.CommandContext(ctx, "go", "build", "-o", binary, "../../cmd/facade")
+	buildArgs := []string{"build", "-o", binary}
+	coverageDir := os.Getenv("FACADE_COVERAGE_DIR")
+	if coverageDir != "" {
+		buildArgs = append(buildArgs, "-cover", "-covermode=atomic")
+	}
+	buildArgs = append(buildArgs, "../../cmd/facade")
+	build := exec.CommandContext(ctx, "go", buildArgs...)
 	output, err := build.CombinedOutput()
 	require.NoError(t, err, "build facade: %s", output)
 
@@ -70,6 +76,9 @@ func TestFacade(t *testing.T) {
 			defer cancel()
 			cmd := exec.CommandContext(ctx, binary, test.args...)
 			cmd.Dir = dir
+			if coverageDir != "" {
+				cmd.Env = append(os.Environ(), "GOCOVERDIR="+coverageDir)
+			}
 			output, err := cmd.CombinedOutput()
 			if test.wantExit == 0 {
 				require.NoError(t, err, "%s", output)

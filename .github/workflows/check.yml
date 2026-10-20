@@ -42,8 +42,19 @@ jobs:
       - name: Link golangci-lint for Make
         run: mkdir -p bin && ln -s "$(command -v golangci-lint)" bin/golangci-lint
 
-      - name: Check formatting, lint, vet, and tests
-        run: make check
+      - name: Check formatting and lint
+        run: make format-lint lint
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test and collect coverage
+        run: make cover
 
       - name: Build static executable
         run: make build
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

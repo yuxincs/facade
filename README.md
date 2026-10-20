@@ -29,7 +29,8 @@ make build
 ./bin/facade -version
 ```
 
-GitHub Actions runs `make check` and `make build` on pushes and pull requests.
+GitHub Actions runs formatting, lint, vet, coverage tests, and a static build on
+pushes and pull requests.
 `make check` includes golangci-lint. The version is pinned in `.golangciversion`;
 `make lint` installs that version into `bin/` when needed and runs it locally.
 The first installation requires network access, `curl`, and `tar`.
@@ -45,6 +46,14 @@ and the platform launcher. The fake server records lifecycle events in `events.l
 On macOS, the installer uses the Linux fixture and a shell launcher.
 Other platforms skip installation-dependent cases. Run just those tests with
 `go test ./tests/e2e`.
+
+Run `make cover` to merge package-test coverage and coverage from the CLI binaries
+launched by E2E tests into `coverage.out`. Raw counters are kept in `.coverage/`;
+each run clears them and disables test-result caching to avoid stale results.
+View it with `go tool cover -html=coverage.out`.
+CI uploads this report to Codecov using GitHub OIDC, without an upload-token secret.
+Enable the repository in Codecov to receive uploads. Test helpers are excluded from
+Codecov's coverage metrics.
 
 Set a version when building a release:
 

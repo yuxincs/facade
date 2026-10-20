@@ -26,3 +26,4 @@ go.work.sum
 
 # Local builds
 /bin/
+/.coverage/
