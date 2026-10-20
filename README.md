@@ -1,5 +1,8 @@
 # Facade
 
+[![CI](https://github.com/yuxincs/facade/actions/workflows/check.yml/badge.svg)](https://github.com/yuxincs/facade/actions/workflows/check.yml)
+[![codecov](https://codecov.io/gh/yuxincs/facade/branch/main/graph/badge.svg)](https://codecov.io/gh/yuxincs/facade)
+
 An on-demand game server proxy written in Go. Facade aims to keep a lightweight
 public endpoint available while starting the actual game server when players
 join and stopping it after it becomes idle.
