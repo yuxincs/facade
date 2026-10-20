@@ -2,7 +2,6 @@ package e2e_test
 
 import (
 	"context"
-	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -32,7 +31,7 @@ func TestFacade(t *testing.T) {
 	type testCase struct {
 		name       string
 		args       []string
-		files      fs.FS
+		install    func(*testing.T) string
 		prepare    func(*testing.T, string)
 		wantExit   int
 		wantOutput string
@@ -40,10 +39,10 @@ func TestFacade(t *testing.T) {
 	cases := []testCase{
 		{name: "help without installation", args: []string{"-help"}, wantOutput: "Usage: facade"},
 		{name: "version without installation", args: []string{"-version"}, wantOutput: "facade dev"},
-		{name: "palworld", files: palworldtest.Files, wantOutput: "detected game"},
+		{name: "palworld", install: palworldtest.Install, wantOutput: "detected game"},
 		{name: "empty directory", wantExit: 1, wantOutput: "no supported game detected"},
 		{
-			name: "REST API disabled", files: palworldtest.Files,
+			name: "REST API disabled", install: palworldtest.Install,
 			wantExit: 1, wantOutput: "set RESTAPIEnabled=True",
 			prepare: func(t *testing.T, dir string) {
 				configs, err := filepath.Glob(filepath.Join(dir, "Pal", "Saved", "Config", "*", "PalWorldSettings.ini"))
@@ -61,13 +60,8 @@ func TestFacade(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			dir := t.TempDir()
-			if test.files != nil {
-				entries, err := fs.ReadDir(test.files, ".")
-				require.NoError(t, err)
-				if len(entries) == 0 {
-					t.Skip("no fixture for this platform")
-				}
-				require.NoError(t, os.CopyFS(dir, test.files))
+			if test.install != nil {
+				dir = test.install(t)
 			}
 			if test.prepare != nil {
 				test.prepare(t, dir)

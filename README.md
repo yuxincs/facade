@@ -39,9 +39,11 @@ Formatting uses golangci-lint's `gofmt` formatter. `make format-lint` checks wit
 rewriting files; run `make fmt` to apply formatting locally.
 
 `go test ./...` includes E2E tests that build and launch the actual Facade binary
-in a copy of the shared Palworld fixture. The embedded testdata exposes the Linux
-or Windows server root based on the host platform; other platforms expose an
-empty filesystem and skip fixture-dependent cases. Run just those tests with
+in a temporary Palworld installation prepared by `palworldtest.Install(t)`. It
+includes settings, a fake UDP server with authenticated player/save REST endpoints,
+and the platform launcher. The fake server records lifecycle events in `events.log`.
+On macOS, the installer uses the Linux fixture and a shell launcher.
+Other platforms skip installation-dependent cases. Run just those tests with
 `go test ./tests/e2e`.
 
 Set a version when building a release:

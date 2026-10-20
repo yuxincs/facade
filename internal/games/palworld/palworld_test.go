@@ -18,15 +18,9 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	t.Run("embedded installation", func(t *testing.T) {
+	t.Run("installation", func(t *testing.T) {
 		t.Parallel()
-		entries, err := fs.ReadDir(palworldtest.Files, ".")
-		require.NoError(t, err)
-		if len(entries) == 0 {
-			t.Skip("no Palworld fixture for this platform")
-		}
-		dir := t.TempDir()
-		require.NoError(t, os.CopyFS(dir, palworldtest.Files))
+		dir := palworldtest.Install(t)
 		got, err := palworld.New(dir)
 		require.NoError(t, err)
 		require.NotNil(t, got)
@@ -56,16 +50,10 @@ func TestNew(t *testing.T) {
 func TestNewNoMatch(t *testing.T) {
 	t.Parallel()
 
-	root := t.TempDir()
-	entries, err := fs.ReadDir(palworldtest.Files, ".")
-	require.NoError(t, err)
-	require.NoError(t, os.CopyFS(root, palworldtest.Files))
+	root := palworldtest.Install(t)
 	for _, subdir := range []string{"Pal", "Pal/Saved", "Pal/Saved/Config"} {
 		t.Run(subdir, func(t *testing.T) {
 			t.Parallel()
-			if len(entries) == 0 {
-				t.Skip("no Palworld fixture for this platform")
-			}
 			matched, err := palworld.New(filepath.Join(root, filepath.FromSlash(subdir)))
 			require.ErrorIs(t, err, errors.ErrUnsupported)
 			require.Nil(t, matched)
